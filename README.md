@@ -33,6 +33,17 @@ Under the hood, it turns each question into real pandas code, executes it, and e
 - **100% local & private** - powered by Ollama, no data ever leaves your machine
 - **Instant context building** - automatic column/type/summary statistics fed to the model on upload
 
+## 🎯 Target Audience
+
+Who this project is built for:
+
+- **SME owners & managers** - people who keep sales, credit, or inventory data in Excel but don't know formulas or pivot tables
+- **Sales & finance teams** - get quick answers from reports without manually building queries each time
+- **Credit/banking professionals** - ask questions directly about credit portfolios (e.g. overdue payments, risk segments)
+- **Privacy-conscious organizations** - banking, legal, healthcare, or any team that can't send sensitive data to a cloud LLM API
+- **Azerbaijani-speaking teams** - no need to work around English-only AI tools
+- **Non-technical staff** - no SQL, Python, or Excel formula knowledge required, just natural language questions
+
 ## 🏗️ Architecture
 
 ```mermaid
