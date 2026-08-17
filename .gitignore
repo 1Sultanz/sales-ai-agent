@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+venv/
+env/
+.venv/
+
+# Streamlit
+.streamlit/
+
+# Environment / secrets
+.env
+.env.local
+
+# Uploaded / sensitive data
+data/uploads/
+*.xlsx
+*.xls
+!screenshots/*
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
