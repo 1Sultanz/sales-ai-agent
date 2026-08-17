@@ -88,7 +88,7 @@ sales-ai-agent/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/<your-username>/sales-ai-agent.git
+git clone https://github.com/1Sultanz/sales-ai-agent.git
 cd sales-ai-agent
 
 # 2. Create and activate a virtual environment
