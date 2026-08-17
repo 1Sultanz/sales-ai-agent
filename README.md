@@ -128,7 +128,7 @@ Swap `OLLAMA_MODEL` for any Ollama-compatible model you have pulled locally.
 
 ## Notes & Limitations
 
-- The agent executes Python code to answer questions — intended for **trusted, local use** with your own data, not as a public-facing multi-tenant service.
+- The agent executes Python code to answer questions - intended for **trusted, local use** with your own data, not as a public-facing multi-tenant service.
 - Answer quality depends on the local LLM's capability; larger models (e.g. `qwen2.5:14b`) may give more accurate results at the cost of speed.
 - Currently answers are generated in Azerbaijani only.
 
