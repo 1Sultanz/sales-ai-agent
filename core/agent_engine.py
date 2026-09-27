@@ -1,17 +1,67 @@
+import os
 from typing import Dict
 
 import difflib
 
 import pandas as pd
-from langchain_ollama import ChatOllama
+from dotenv import load_dotenv
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_experimental.tools import PythonAstREPLTool
 
-OLLAMA_BASE_URL      = "http://localhost:11434"
-OLLAMA_MODEL         = "qwen2.5:7b"
+load_dotenv()
+
+# "ollama" (local, default) or "nvidia" (NVIDIA API Catalog, build.nvidia.com)
+LLM_PROVIDER         = os.getenv("LLM_PROVIDER", "ollama").strip().lower()
+
+OLLAMA_BASE_URL      = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_MODEL         = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+
+NVIDIA_MODEL         = os.getenv("NVIDIA_MODEL", "meta/llama-3.3-70b-instruct")
+
 AGENT_MAX_ITERATIONS = 15
+
+
+def get_llm_info() -> str:
+    """Short label of the active backend, shown in the UI sidebar."""
+    if LLM_PROVIDER == "nvidia":
+        return f"NVIDIA API · {NVIDIA_MODEL}"
+    return f"Ollama (lokal) · {OLLAMA_MODEL}"
+
+
+def _build_llm() -> BaseChatModel:
+    """
+    Build the chat model for the selected provider.
+
+    Ollama keeps all data on the local machine. NVIDIA sends prompts
+    (including column names and sample rows from the Excel file) to
+    NVIDIA's cloud API, so use it only with data that may leave the company.
+    """
+    if LLM_PROVIDER == "nvidia":
+        from langchain_nvidia_ai_endpoints import ChatNVIDIA
+
+        if not os.getenv("NVIDIA_API_KEY"):
+            raise RuntimeError(
+                "NVIDIA_API_KEY tapılmadı. .env faylına NVIDIA_API_KEY=nvapi-... əlavə edin."
+            )
+        return ChatNVIDIA(
+            model=NVIDIA_MODEL,
+            temperature=0,
+            max_tokens=1024,
+        )
+
+    if LLM_PROVIDER != "ollama":
+        raise ValueError(f"Naməlum LLM_PROVIDER: '{LLM_PROVIDER}'. 'ollama' və ya 'nvidia' olmalıdır.")
+
+    from langchain_ollama import ChatOllama
+
+    return ChatOllama(
+        base_url=OLLAMA_BASE_URL,
+        model=OLLAMA_MODEL,
+        temperature=0,
+    )
 
 
 def fz(series: pd.Series, text: str, cutoff: float = 0.6):
@@ -276,11 +326,7 @@ def create_agent(
     memory: ConversationBufferWindowMemory,
     excel_context: str = "",
 ) -> AgentExecutor:
-    llm = ChatOllama(
-        base_url=OLLAMA_BASE_URL,
-        model=OLLAMA_MODEL,
-        temperature=0,
-    )
+    llm = _build_llm()
 
     python_tool = _build_python_tool(sheets)
     tools = [python_tool]

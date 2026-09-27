@@ -6,7 +6,7 @@ from core.excel_handler import (
     build_context,
     get_dataframe_summary,
 )
-from core.agent_engine import create_agent
+from core.agent_engine import create_agent, get_llm_info
 from core.memory import create_memory, reset_memory
 
 # Səhifə konfiqurasiyası
@@ -94,6 +94,7 @@ with st.sidebar:
         )
 
     st.markdown("---")
+    st.caption(f"🧠 Model: {get_llm_info()}")
 
     if st.button("🗑️ Söhbəti Sil", use_container_width=True):
         st.session_state.memory       = reset_memory()

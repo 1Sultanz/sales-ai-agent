@@ -30,7 +30,8 @@ Under the hood, it turns each question into real pandas code, executes it, and e
 - **Natural language Q&A** - ask in Azerbaijani, get Azerbaijani answers, grounded in real computed results
 - **Real pandas execution** - the agent writes and runs actual code (no hallucinated numbers)
 - **Conversation memory** - follow-up questions understand prior context (sliding window)
-- **100% local & private** - powered by Ollama, no data ever leaves your machine
+- **Local & private by default** - powered by Ollama, no data leaves your machine
+- **Optional cloud backend** - switch to larger models on the NVIDIA API Catalog with one setting
 - **Instant context building** - automatic column/type/summary statistics fed to the model on upload
 
 ## 🎯 Target Audience
@@ -50,7 +51,7 @@ Who this project is built for:
 flowchart LR
     A[📁 Excel Upload] --> B[core/excel_handler.py]
     B -->|DataFrames + context| C[core/agent_engine.py]
-    C -->|ReAct Agent| D[Ollama LLM<br/>qwen2.5:7b]
+    C -->|ReAct Agent| D[LLM<br/>Ollama qwen2.5:7b or NVIDIA API]
     C --> E[Python REPL Tool<br/>pandas execution]
     F[core/memory.py] <--> C
     C --> G[💬 Streamlit UI<br/>app.py]
@@ -65,7 +66,7 @@ The agent follows a **ReAct** (Reason + Act) loop: it reasons about the question
 |---|---|
 | UI | [Streamlit](https://streamlit.io/) |
 | Agent framework | [LangChain](https://www.langchain.com/) (ReAct agent) |
-| LLM runtime | [Ollama](https://ollama.com/) - `qwen2.5:7b` (local, no API key) |
+| LLM runtime | [Ollama](https://ollama.com/) - `qwen2.5:7b` (local, default) or [NVIDIA API Catalog](https://build.nvidia.com/) (optional, cloud) |
 | Data processing | pandas, openpyxl |
 | Memory | LangChain `ConversationBufferWindowMemory` |
 
@@ -81,6 +82,7 @@ sales-ai-agent/
 │   └── memory.py             # Conversation memory config
 ├── screenshots/               # Images used in this README
 ├── requirements.txt
+├── .env.example              # Backend / model settings template
 ├── .gitignore
 ├── LICENSE
 └── README.md
@@ -109,7 +111,10 @@ source venv/bin/activate      # Windows: venv\Scripts\activate
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Make sure Ollama is running with the model available
+# 4. Create your settings file
+cp .env.example .env          # Windows: copy .env.example .env
+
+# 5. Make sure Ollama is running with the model available
 ollama pull qwen2.5:7b
 ollama serve                  # if not already running
 ```
@@ -127,20 +132,32 @@ streamlit run app.py
 
 ## 🔧 Configuration
 
-Model and connection settings live in `core/agent_engine.py`:
+All settings live in `.env` (copy from `.env.example`):
 
-```python
-OLLAMA_BASE_URL      = "http://localhost:11434"
-OLLAMA_MODEL         = "qwen2.5:7b"
-AGENT_MAX_ITERATIONS = 15
+| Variable | Default | Description |
+|---|---|---|
+| `LLM_PROVIDER` | `ollama` | `ollama` (local) or `nvidia` (NVIDIA API Catalog) |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server address |
+| `OLLAMA_MODEL` | `qwen2.5:7b` | Any model you have pulled locally |
+| `NVIDIA_API_KEY` | - | Key from [build.nvidia.com](https://build.nvidia.com/) (`nvapi-...`) |
+| `NVIDIA_MODEL` | `meta/llama-3.3-70b-instruct` | Any chat model from the NVIDIA API Catalog |
+
+### Using the NVIDIA API instead of Ollama
+
+```env
+LLM_PROVIDER=nvidia
+NVIDIA_API_KEY=nvapi-xxxxxxxx
+NVIDIA_MODEL=meta/llama-3.3-70b-instruct
 ```
 
-Swap `OLLAMA_MODEL` for any Ollama-compatible model you have pulled locally.
+Restart the app; the sidebar shows which model is active. No Ollama needed in this mode.
+
+> ⚠️ In `nvidia` mode, your questions plus column names and sample rows from the Excel file are sent to NVIDIA's cloud. Use `ollama` for sensitive data.
 
 ## Notes & Limitations
 
 - The agent executes Python code to answer questions - intended for **trusted, local use** with your own data, not as a public-facing multi-tenant service.
-- Answer quality depends on the local LLM's capability; larger models (e.g. `qwen2.5:14b`) may give more accurate results at the cost of speed.
+- Answer quality depends on the LLM's capability; larger models (e.g. `qwen2.5:14b` locally, or a 70B model via the NVIDIA API) may give more accurate results.
 - Currently answers are generated in Azerbaijani only.
 
 ## Contributing
